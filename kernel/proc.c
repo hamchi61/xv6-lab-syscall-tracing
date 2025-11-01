@@ -695,4 +695,24 @@ procdump(void)
   }
 }
 
+//STEP2
+struct proc* find_proc_by_pid(int pid){
+  struct proc* now_proc;
+
+  // Search through the process table
+  for(int i =0; i <NPROC ; i++)
+  {
+    now_proc = &proc[i];
+    acquire(&(now_proc->lock));
+    // if the matching process is found
+    // return pointer to the matching process
+    if(now_proc->pid == pid){
+      release(&now_proc->lock);
+      return now_proc;
+    }
+    release(&now_proc->lock);
+  }
+  // the matching process is not found
+  return 0;
+}
 
