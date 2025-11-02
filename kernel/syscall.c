@@ -7,6 +7,32 @@
 #include "syscall.h"
 #include "defs.h"
 
+//STEP4
+static char *syscall_names[] = {
+[SYS_fork]    "fork",
+[SYS_exit]    "exit",
+[SYS_wait]    "wait",
+[SYS_pipe]    "pipe",
+// ... Complete me
+[SYS_read]    "read",
+[SYS_kill]    "kill",
+[SYS_exec]    "exec",
+[SYS_fstat]   "fstat",
+[SYS_chdir]   "chdir",
+[SYS_dup]     "dup",
+[SYS_getpid]  "getpid",
+[SYS_sbrk]    "sbrk",
+[SYS_sleep]   "sleep",
+[SYS_uptime]  "uptime",
+[SYS_open]    "open",
+[SYS_write]   "write",
+[SYS_mknod]   "mknod",
+[SYS_unlink]  "unlink",
+[SYS_link]    "link",
+[SYS_mkdir]   "mkdir",
+[SYS_close]   "close",
+[SYS_trace]   "trace",
+};
 
 // Fetch the uint64 at addr from the current process.
 int
@@ -136,21 +162,62 @@ static uint64 (*syscalls[])(void) = {
 
 
 
-
-void
-syscall(void)
+//STEP4
+void syscall(void)
 {
+
   int num;
   struct proc *p = myproc();
-
   num = p->trapframe->a7;
-  if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-    // Use num to lookup the system call function for num, call it,
-    // and store its return value in p->trapframe->a0
-    p->trapframe->a0 = syscalls[num]();
-  } else {
+  if (num > 0 && num < NELEM(syscalls) && syscalls[num])
+  {
+
+    
+    uint64 arg0 = p->trapframe->a0; // Save first argument BEFORE syscall dispatch
+
+    p->trapframe->a0 = syscalls[num](); // Use num to lookup the system call function for num, call it, and store its return value in p->trapframe->a0
+
+
+    if (p->traced)
+    {
+
+      printf("[pid %d] %s(", p->pid, syscall_names[num]);
+      // Print syscall name, first argument
+
+      if (num == SYS_open || num == SYS_unlink ||  
+          num == SYS_chdir || num == SYS_mkdir || num == SYS_link
+          /* ignore the second string argument of `link` */)
+      {
+         // If the syscall is one of these five...
+        char str[128];
+        if(fetchstr(arg0,str,sizeof(str)) <0){
+          printf("<bad ptr>");
+        }
+        else printf("\"%s\"",str);
+      }
+      else if ( num == SYS_exec ){
+         // If the syscall is exec... 
+        char progr[128];
+        uint64 argv0;
+        if(arg0 != 0 && (p->pagetable,(char *)&argv0, arg0, sizeof(uint64)) == 0 && fetchstr(argv0,progr,sizeof(progr)) >=0){
+          printf("\"%s\"",progr);
+        }
+        else printf("<bad ptr>");
+      }
+      else
+      {
+         // If the syscall is any of the others...
+         printf("%d", (int)arg0);
+      }
+
+      // Print the remaining part.
+      printf(") = %d\n", (int)p->trapframe->a0);
+    }
+  }
+  else
+  {
     printf("%d %s: unknown sys call %d\n",
-            p->pid, p->name, num);
+           p->pid, p->name, num);
     p->trapframe->a0 = -1;
   }
 }
