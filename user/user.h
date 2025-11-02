@@ -22,6 +22,8 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+//STEP3
+int trace(int);
 
 
 // ulib.c
