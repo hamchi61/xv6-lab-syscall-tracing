@@ -199,7 +199,7 @@ void syscall(void)
          // If the syscall is exec... 
         char progr[128];
         uint64 argv0;
-        if(arg0 != 0 && (p->pagetable,(char *)&argv0, arg0, sizeof(uint64)) == 0 && fetchstr(argv0,progr,sizeof(progr)) >=0){
+        if(arg0 != 0 && copyin(p->pagetable,(char *)&argv0, arg0, sizeof(uint64)) == 0 && fetchstr(argv0,progr,sizeof(progr)) >=0){
           printf("\"%s\"",progr);
         }
         else printf("<bad ptr>");
