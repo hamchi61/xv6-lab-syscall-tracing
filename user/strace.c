@@ -15,9 +15,7 @@ main(int argc, char *argv[])
         exec(argv[1], &argv[1]);
         exit(1);
     } else {
-        if (trace(pid) < 0) {
-            exit(1);
-        }
+        trace(pid);
         wait(0);
     }
 

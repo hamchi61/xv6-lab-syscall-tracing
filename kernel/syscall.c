@@ -197,10 +197,15 @@ void syscall(void)
       }
       else if ( num == SYS_exec ){
          // If the syscall is exec... 
-        char progr[128];
+        uint64 argv_addr = p->trapframe->a1;
         uint64 argv0;
-        if(arg0 != 0 && copyin(p->pagetable,(char *)&argv0, arg0, sizeof(uint64)) == 0 && fetchstr(argv0,progr,sizeof(progr)) >=0){
-          printf("\"%s\"",progr);
+        char progr[128];
+
+        if (argv0 != 0 &&
+            copyin(p->pagetable, (char *)&argv0, argv_addr, sizeof(uint64)) == 0 &&
+            fetchstr(argv0, progr, sizeof(progr)) >= 0)
+        {
+          printf("\"%s\"", progr);
         }
         else printf("<bad ptr>");
       }
