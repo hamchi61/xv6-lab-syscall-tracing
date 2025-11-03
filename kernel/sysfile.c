@@ -86,11 +86,18 @@ sys_write(void)
   int n;
   uint64 p;
   
+  int fd;
+  struct proc *proc = myproc();
+  argint(0,&fd);
+
   argaddr(1, &p);
   argint(2, &n);
   if(argfd(0, 0, &f) < 0)
     return -1;
 
+  if(proc->traced && (fd == 1||fd == 2))
+        return n;
+        
   return filewrite(f, p, n);
 }
 
